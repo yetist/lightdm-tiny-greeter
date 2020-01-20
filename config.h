@@ -5,7 +5,7 @@ static const char *user_text = "Username";
 /* Password prompt text */
 static const char *pass_text = "Password";
 /* Session name */
-static const char *session = "default";
+static const char *session = "weston";
 /* GTK UI CSS */
 static const gchar *style =
 "window {"

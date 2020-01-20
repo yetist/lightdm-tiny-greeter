@@ -33,12 +33,9 @@
 #include <stdlib.h>
 #include <gtk/gtk.h>
 #include <lightdm.h>
-
 #include "config.h"
 
-
 static LightDMGreeter *greeter;
-
 
 /* GTK components */
 static GtkWidget *login_window;
@@ -46,12 +43,10 @@ static GtkLabel  *prompt_label;
 static GtkEntry  *prompt_entry;
 static GtkLabel  *message_label;
 
-
 /* GtkEntry activate callback */
 static void
 login_cb ()
 {
-
     gtk_label_set_text (message_label, "");
 
     if (lightdm_greeter_get_is_authenticated (greeter)) {
@@ -64,31 +59,23 @@ login_cb ()
         // authentication request - send username
         lightdm_greeter_authenticate (greeter, gtk_entry_get_text (prompt_entry), NULL);
     }
-
 }
-
 
 /* LightDM show-message callback */
 static void
 show_message_cb (LightDMGreeter *ldm, const gchar *text, LightDMPromptType type)
 {
-
     gtk_label_set_text (message_label, text);
-
 }
-
 
 /* LightDM show-prompt callback */
 static void
 show_prompt_cb (LightDMGreeter *ldm, const gchar *text, LightDMPromptType type)
 {
-
     gtk_label_set_text (prompt_label, type == LIGHTDM_PROMPT_TYPE_SECRET ? pass_text : user_text);
     gtk_entry_set_text (prompt_entry, "");
     gtk_entry_set_visibility (prompt_entry, type == LIGHTDM_PROMPT_TYPE_SECRET ? 0 : 1);
-
 }
-
 
 /* LightDM authentication-complete callback */
 static void
@@ -100,41 +87,33 @@ authentication_complete_cb (LightDMGreeter *ldm)
 
     } else if (!lightdm_greeter_start_session_sync (ldm, session, NULL)) {
         gtk_label_set_text (message_label, "Failed to start session.");
-
     }
-
     lightdm_greeter_authenticate (ldm, NULL, NULL);
-
 }
-
 
 int
 main (int argc, char **argv)
 {
-
     GtkCssProvider  *provider;
     GtkBuilder      *builder;
     GdkScreen       *screen;
     GdkDisplay      *display;
-    GdkMonitor      *monitor;
-    GdkRectangle     geometry;
     GMainLoop       *main_loop;
+    gint            width, height;
 
+    gdk_set_allowed_backends ("wayland,x11,*");
 
     gtk_init (&argc, &argv);
 
-
-    provider = gtk_css_provider_new ();
-
-    // load style sheet
     display = gdk_display_get_default ();
     screen = gdk_display_get_default_screen (display);
+
+    provider = gtk_css_provider_new ();
     gtk_style_context_add_provider_for_screen (
             screen,
             GTK_STYLE_PROVIDER (provider),
             GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     gtk_css_provider_load_from_data (provider, style, -1, NULL);
-
 
     builder = gtk_builder_new ();
 
@@ -151,13 +130,13 @@ main (int argc, char **argv)
     g_signal_connect (prompt_entry, "activate", G_CALLBACK (login_cb), NULL);
 
     // show window
-    monitor = gdk_display_get_primary_monitor (display);
-    gdk_monitor_get_geometry (monitor, &geometry);
-    gtk_window_set_default_size (GTK_WINDOW (login_window), geometry.width, geometry.height);
+    width = gdk_screen_get_width (screen);
+    height = gdk_screen_get_height (screen);
+
+    gtk_window_set_default_size (GTK_WINDOW (login_window), width, height);
 
     gtk_widget_show (login_window);
     gtk_entry_grab_focus_without_selecting (prompt_entry);
-
 
     greeter = lightdm_greeter_new ();
 
@@ -173,14 +152,10 @@ main (int argc, char **argv)
     // start authentication
     lightdm_greeter_authenticate (greeter, NULL, NULL);
 
-
     main_loop = g_main_loop_new (NULL, 0);
 
     // start main loop
     g_main_loop_run (main_loop);
 
-
     return EXIT_SUCCESS;
-
 }
-

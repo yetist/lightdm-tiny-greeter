@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=LightDM Tiny Greeter
 Comment=Tiny GTK3 LightDM Greeter
-Exec=lightdm-tiny-greeter
+Exec=kwin_wayland lightdm-tiny-greeter
 Type=Application
-
+X-LightDM-Session-Type=wayland
